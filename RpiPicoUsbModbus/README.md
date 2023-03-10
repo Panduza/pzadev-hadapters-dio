@@ -61,3 +61,12 @@ GPIO's 4 and 5 not used due to conflit probability with the uart line
 In code, data is visible in the logs of python script (master.py).
 
 Value 1 is represented by true and 0 by false
+
+
+# Environment requirements
+
+Please make sure you have the following packages :
+
+cmake : sudo apt install cmake
+pymodbus : pip3 install pymodbus
+(recommended) minicom : sudo apt install minicom
