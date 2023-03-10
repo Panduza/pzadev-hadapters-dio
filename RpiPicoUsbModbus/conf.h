@@ -50,6 +50,8 @@ static uint8_t coils[REG_COUNT / 8];
 static uint8_t discreteInputs[REG_COUNT / 8];
 
 
+const uint LED_PIN = 25;
+
 // GPIO'S DECLERATION
 const uint16_t GPIO_0 = 0;
 const uint16_t GPIO_1 = 1;

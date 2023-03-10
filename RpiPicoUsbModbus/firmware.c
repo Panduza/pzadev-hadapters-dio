@@ -20,11 +20,9 @@ int main() {
     int i_get=0;
     uint8_t receiveBuffer[255];
     uint8_t single;
-    const uint LED_PIN = 25;
+    
     stdio_init_all();
     uart_init(UART_ID, BAUDRATE);
-    gpio_init(LED_PIN);
-    gpio_set_dir(LED_PIN, GPIO_OUT);
     gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
     gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
     ModbusSlave slave;
@@ -174,6 +172,10 @@ ModbusError registerCallback(const ModbusSlave *slaveID,const ModbusRegisterCall
     gpio_init(GPIO_22);
     gpio_set_dir(GPIO_22, GPIO_OUT);
     gpio_put(GPIO_22, 1);
+    
+    gpio_init(LED_PIN);
+    gpio_set_dir(LED_PIN, GPIO_OUT);
+    gpio_put(LED_PIN, 1);
     
     gpio_init(GPIO_26);
     gpio_set_dir(GPIO_26, GPIO_IN);
@@ -508,6 +510,20 @@ ModbusError registerCallback(const ModbusSlave *slaveID,const ModbusRegisterCall
                             case 10 + GPIO_22 : 
                             dir = gpio_get_dir(GPIO_22);
                             pulls = gpio_is_pulled_up(GPIO_22);
+                            if(dir == GPIO_IN){
+                            if(pulls){
+                                    result->value=0x01; break;
+                                } else if(!pulls){
+                                   result->value=0x02; break;
+                                }else{
+                                    result->value=0x03; break;
+                                }
+                            } else if(dir == GPIO_OUT){
+                                result->value=0x00; break;
+                            }
+                            case 10 + LED_PIN : 
+                            dir = gpio_get_dir(LED_PIN);
+                            pulls = gpio_is_pulled_up(LED_PIN);
                             if(dir == GPIO_IN){
                             if(pulls){
                                     result->value=0x01; break;
