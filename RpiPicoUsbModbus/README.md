@@ -49,8 +49,8 @@ GPIO's 4 and 5 not used due to conflit probability with the uart line
 |  20   |  0     |   output          |     0x0            | 
 |  21   |  0     |   input pull down          |  0x2               |
 |  22   |  1     |    output         |     0x0            |
-|  25 (INTERNAL LED)  | 1     |             |                | 
-|  26   |       |             |                 |
-|  27   |       |             |                 |
-|  28   |       |             |                 | 
+|  25 (INTERNAL LED)  | 1     |    output         |   0x0             | 
+|  26   |     1  |   input pull up          |      0x1           |
+|  27   |   1    |   output          |    0x0             |
+|  28   |   0    |     output        |     0x0            | 
 
