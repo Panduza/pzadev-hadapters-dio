@@ -28,6 +28,11 @@ set(PROJECT_SOURCES
 # if (TARGET tinyusb_device)
 add_executable(${CMAKE_PROJECT_NAME} ${PROJECT_SOURCES})
 
+target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC
+    ${liblightmodbus_SOURCE_DIR}/include/lightmodbus
+    ${CMAKE_CURRENT_LIST_DIR}/inc/
+)
+
 # pull in common dependencies
 target_link_libraries(firmware pico_stdlib lightmodbus::lightmodbus)
 

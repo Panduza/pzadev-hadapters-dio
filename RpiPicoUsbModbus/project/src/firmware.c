@@ -1,6 +1,6 @@
 // include config file
 
-#include "../inc/conf.h"
+#include "conf.h"
 
 // prototype functions
 void init(const uint led_used);
@@ -185,7 +185,6 @@ ModbusError registerCallback(const ModbusSlave *slaveID,const ModbusRegisterCall
     gpio_init(GPIO_28);
     gpio_set_dir(GPIO_28, GPIO_IN);
     gpio_pull_down(GPIO_28);
-
 
     char str[1024];
     sprintf(str,"Register query:\r\ntquery: %s\r\n type: %s\r\n  @: %d\r\nvalue: %c\r\n  fun: %d\r\n",
@@ -577,38 +576,38 @@ ModbusError registerCallback(const ModbusSlave *slaveID,const ModbusRegisterCall
                 case MODBUS_INPUT_REGISTER:   result->value = inputRegisters[args->index]; break;
                 //case MODBUS_COIL:             result->value = modbusMaskRead(coils, args->index); break;
                 case MODBUS_COIL:
-                debug("inside coil case\r\n");
-                char str1[100];
-                sprintf(str1, "GPIO number %d\r\n", args->index);
-                debug(str1);
-                    switch (args->index) // get value of GPIO's 
-                    {
-                        case 0: result->value = gpio_get(GPIO_0); break;
-                        case 1: result->value = gpio_get(GPIO_1); break; 
-                        case 2: result->value = gpio_get(GPIO_2); break; 
-                        case 3: result->value = gpio_get(GPIO_3); break;
-                        case 6: result->value = gpio_get(GPIO_6); break;  
-                        case 7: result->value = gpio_get(GPIO_7); break; 
-                        case 8: result->value = gpio_get(GPIO_8); break; 
-                        case 9: result->value = gpio_get(GPIO_9); break; 
-                        case 10: result->value = gpio_get(GPIO_10); break; 
-                        case 11: result->value = gpio_get(GPIO_11); break; 
-                        case 12: result->value = gpio_get(GPIO_12); break; 
-                        case 13: result->value = gpio_get(GPIO_13); break; 
-                        case 14: result->value = gpio_get(GPIO_14); break; 
-                        case 15: result->value = gpio_get(GPIO_15); break; 
-                        case 16: result->value = gpio_get(GPIO_16); break; 
-                        case 17: result->value = gpio_get(GPIO_17); break; 
-                        case 18: result->value = gpio_get(GPIO_18); break; 
-                        case 19: result->value = gpio_get(GPIO_19); break; 
-                        case 20: result->value = gpio_get(GPIO_20); break; 
-                        case 21: result->value = gpio_get(GPIO_21); break; 
-                        case 22: result->value = gpio_get(GPIO_22); break; 
-                        case 26: result->value = gpio_get(GPIO_26); break; 
-                        case 27: result->value = gpio_get(GPIO_27); break; 
-                        case 28: result->value = gpio_get(GPIO_28); break;
-                        default:
-                            debug("problem with address\r\n"); 
+                    debug("inside coil case\r\n");
+                    char str1[100];
+                    sprintf(str1, "GPIO number %d\r\n", args->index);
+                    debug(str1);
+                        switch (args->index) // get value of GPIO's 
+                        {
+                            case 0: result->value = gpio_get(GPIO_0); break;
+                            case 1: result->value = gpio_get(GPIO_1); break; 
+                            case 2: result->value = gpio_get(GPIO_2); break; 
+                            case 3: result->value = gpio_get(GPIO_3); break;
+                            case 6: result->value = gpio_get(GPIO_6); break;  
+                            case 7: result->value = gpio_get(GPIO_7); break; 
+                            case 8: result->value = gpio_get(GPIO_8); break; 
+                            case 9: result->value = gpio_get(GPIO_9); break; 
+                            case 10: result->value = gpio_get(GPIO_10); break; 
+                            case 11: result->value = gpio_get(GPIO_11); break; 
+                            case 12: result->value = gpio_get(GPIO_12); break; 
+                            case 13: result->value = gpio_get(GPIO_13); break; 
+                            case 14: result->value = gpio_get(GPIO_14); break; 
+                            case 15: result->value = gpio_get(GPIO_15); break; 
+                            case 16: result->value = gpio_get(GPIO_16); break; 
+                            case 17: result->value = gpio_get(GPIO_17); break; 
+                            case 18: result->value = gpio_get(GPIO_18); break; 
+                            case 19: result->value = gpio_get(GPIO_19); break; 
+                            case 20: result->value = gpio_get(GPIO_20); break; 
+                            case 21: result->value = gpio_get(GPIO_21); break; 
+                            case 22: result->value = gpio_get(GPIO_22); break; 
+                            case 26: result->value = gpio_get(GPIO_26); break; 
+                            case 27: result->value = gpio_get(GPIO_27); break; 
+                            case 28: result->value = gpio_get(GPIO_28); break;
+                            default:
+                                debug("problem with address\r\n"); 
                     }
                     break;
                  case MODBUS_DISCRETE_INPUT:   result->value = modbusMaskRead(discreteInputs, args->index); break;
