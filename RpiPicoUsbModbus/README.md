@@ -54,3 +54,10 @@ GPIO's 4 and 5 not used due to conflit probability with the uart line
 |  27   |   1    |   output          |    0x0             |
 |  28   |   0    |     output        |     0x0            | 
 
+
+
+# note
+
+In code, data is visible in the logs of python script (master.py).
+
+Value 1 is represented by true and 0 by false
