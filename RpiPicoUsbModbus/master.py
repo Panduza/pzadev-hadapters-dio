@@ -44,10 +44,10 @@ for i in range(17):
     getType6 = master.read_holding_registers(16+i, 1, SLAVE_ID)
     print("\033[92m value of register \033[0m",getType6.registers)
 
-# GPIO 26 to 28
-for i in range(3):
-    print(f"\033[92m-------------------getting type GPIO {i+26} ----------------------\033[0m")
-    getType6 = master.read_holding_registers(36+i, 1, SLAVE_ID)
+# GPIO 25 to 28
+for i in range(4):
+    print(f"\033[92m-------------------getting type GPIO {i+25} ----------------------\033[0m")
+    getType6 = master.read_holding_registers(35+i, 1, SLAVE_ID)
     print("\033[92m value of register \033[0m",getType6.registers)
 
 
@@ -66,8 +66,8 @@ for i in range(17):
     print(getIO_0.bits[0])
 
 
-# GPIO 26 to 28
-for i in range(3):
-    print(f"\033[92m-------------------I/O {i+26}----------------------\033[0m")
-    getIO_0 = master.read_coils(i+26, 1, SLAVE_ID)
+# GPIO 25 to 28
+for i in range(4):
+    print(f"\033[92m-------------------I/O {i+25}----------------------\033[0m")
+    getIO_0 = master.read_coils(i+25, 1, SLAVE_ID)
     print(getIO_0.bits[0])
