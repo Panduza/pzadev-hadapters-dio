@@ -32,3 +32,38 @@
 
 
 ![image](https://user-images.githubusercontent.com/65350546/224342351-f8cc22c7-3cf5-4a77-a18b-95d6fb44d90d.png)
+
+
+
+# read GPIO description
+
+![image](https://user-images.githubusercontent.com/65350546/224343253-330ce756-ae35-4ce6-8788-148cf35671bf.png)
+
+
+![image](https://user-images.githubusercontent.com/65350546/224343390-e4d85e1c-a9a1-47bd-b940-9a94ab55d24c.png)
+
+
+![image](https://user-images.githubusercontent.com/65350546/224343601-1de020a6-74fb-433a-99d7-74cd600b4c60.png)
+
+
+![image](https://user-images.githubusercontent.com/65350546/224343815-3f004326-da01-4ffd-9a45-abb8f5806793.png)
+
+
+![image](https://user-images.githubusercontent.com/65350546/224343908-94f9232d-d8e2-4702-9e2c-930e52d07314.png)
+
+
+![image](https://user-images.githubusercontent.com/65350546/224344012-b8af29e1-7918-42c6-a16e-11556f8535bf.png)
+
+
+![image](https://user-images.githubusercontent.com/65350546/224344128-1be9bae7-aa02-451f-b2f7-e38267f0b207.png)
+
+
+![image](https://user-images.githubusercontent.com/65350546/224344234-478be428-5bd0-41ce-a6ea-e3e968b6ad3d.png)
+
+
+![image](https://user-images.githubusercontent.com/65350546/224344323-ba6b1fe1-1078-4092-9871-dff9c0d4a856.png)
+
+
+
+
+
