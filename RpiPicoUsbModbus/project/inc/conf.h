@@ -78,5 +78,6 @@ const uint16_t GPIO_26 = 26;
 const uint16_t GPIO_27 = 27;
 const uint16_t GPIO_28 = 28;
 
+void config_GPIO();
 
 #endif

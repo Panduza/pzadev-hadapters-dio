@@ -92,7 +92,7 @@ ModbusError registerCallback(const ModbusSlave *slaveID,const ModbusRegisterCall
     
     gpio_init(GPIO_1);
     gpio_set_dir(GPIO_1, GPIO_OUT);
-    gpio_put(GPIO_1, 0);
+    gpio_put(GPIO_1, 1);
 
     gpio_init(GPIO_2);
     gpio_set_dir(GPIO_2, GPIO_IN);
