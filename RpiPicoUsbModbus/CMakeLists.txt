@@ -43,3 +43,9 @@ pico_add_extra_outputs(firmware)
 # elseif(PICO_ON_DEVICE)
 #     message(WARNING "not building firmware because TinyUSB submodule is not initialized in the SDK")
 # endif()
+
+# USB definition
+add_definitions(-DUSBD_VID=0x16C0) # ID_VENDOR_ID
+add_definitions(-DUSBD_PID=0x05E1) # ID_MODEL_ID
+add_definitions(-DUSBD_MANUFACTURER="panduza.io") # ID_VENDOR
+add_definitions(-DUSBD_PRODUCT="dio-modbus") # ID_MODEL

@@ -49,6 +49,7 @@ static uint16_t inputRegisters[REG_COUNT];
 static uint8_t coils[REG_COUNT / 8];
 static uint8_t discreteInputs[REG_COUNT / 8];
 
+
 // GPIO'S DECLERATION
 const uint16_t GPIO_0 = 0;
 const uint16_t GPIO_1 = 1;
