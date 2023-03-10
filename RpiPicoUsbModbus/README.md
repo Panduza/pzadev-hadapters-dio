@@ -27,7 +27,7 @@ GPIO's 4 and 5 not used due to conflit probability with the uart line
 # PIN configuration
 
 | GPIO | value | description
-|---------|-------------|
-|  0 |     |
+|----- |-------|-----------|
+|  0   |     |
 |    |    |
 |    |          |
