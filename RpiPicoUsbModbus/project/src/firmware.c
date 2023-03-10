@@ -1,7 +1,6 @@
-
 // include config file
 
-#include "conf.h"
+#include "../inc/conf.h"
 
 // prototype functions
 void init(const uint led_used);

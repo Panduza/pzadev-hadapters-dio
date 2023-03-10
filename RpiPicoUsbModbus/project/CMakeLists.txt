@@ -22,26 +22,27 @@ set(PICO_EXAMPLES_PATH ${PROJECT_SOURCE_DIR})
 # to use the sdk
 pico_sdk_init()
 
-# if (TARGET tinyusb_device)
-add_executable(firmware
-    firmware.c
+set(PROJECT_SOURCES
+    ${CMAKE_CURRENT_LIST_DIR}/src/firmware.c
 )
+# if (TARGET tinyusb_device)
+add_executable(${CMAKE_PROJECT_NAME} ${PROJECT_SOURCES})
 
 # pull in common dependencies
 target_link_libraries(firmware pico_stdlib lightmodbus::lightmodbus)
 
 # enable usb output, disable uart output
-pico_enable_stdio_usb(firmware 1)
-pico_enable_stdio_uart(firmware 1)
+pico_enable_stdio_usb(${CMAKE_PROJECT_NAME}  1)
+pico_enable_stdio_uart(${CMAKE_PROJECT_NAME}  1)
 
 # create binaries
-pico_add_extra_outputs(firmware)
+pico_add_extra_outputs(${CMAKE_PROJECT_NAME} )
 
 # add url via pico_set_program_url
-# example_auto_set_url(firmware)
+# example_auto_set_url(${CMAKE_PROJECT_NAME} )
 
 # elseif(PICO_ON_DEVICE)
-#     message(WARNING "not building firmware because TinyUSB submodule is not initialized in the SDK")
+#     message(WARNING "not building ${CMAKE_PROJECT_NAME}  because TinyUSB submodule is not initialized in the SDK")
 # endif()
 
 # USB definition
