@@ -70,3 +70,5 @@ Please make sure you have the following packages :
 cmake : sudo apt install cmake
 pymodbus : pip3 install pymodbus
 (recommended) minicom : sudo apt install minicom
+
+Test screens in test.md file
