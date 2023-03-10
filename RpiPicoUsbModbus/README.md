@@ -29,8 +29,8 @@ GPIO's 4 and 5 not used due to conflit probability with the uart line
 | GPIO | value | description |  returned value |
 |----- |-------|-------------|-----------------|
 |  0   |   1    |      input pull up       |      0x1           | 
-|  1   |       |             |                 |
-|  2   |       |             |                 |
+|  1   |   0    |    output         |   0x0              |
+|  2   |   0    |   input pull down          |    0x2             |
 |  3   |       |             |                 | 
 |  6   |       |             |                 |
 |  7   |       |             |                 |
