@@ -12,7 +12,7 @@ mkdir build
 
 cd build
 
-cmake ..
+cmake ../project
 
 make
 
