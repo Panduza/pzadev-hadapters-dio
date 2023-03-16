@@ -19,12 +19,15 @@ void app_RpiPicoUsbModbus_init(void)
     declare_all_GPIO();
     init_all_GPIO();
 
-    modbus_init(get_modbus_slave());
+    // Declare and assign adress to a modbus slave
+    modbus_init(&MODBUSapp_RpiPicoUsbModbus1);
+    modbus_assign_adress(&MODBUSapp_RpiPicoUsbModbus1, 0x01);
+    modbus_assign_register(&MODBUSapp_RpiPicoUsbModbus1, &modbusRegisterSlave1);
 }
 
 void app_RpiPicoUsbModbus_run(void)
 {
-        platform_modbus_usb_cdc_xfer();
+        platform_modbus_usb_cdc_xfer(&MODBUSapp_RpiPicoUsbModbus1);
         
         gpioConf_change_output_state(&GPIOapp_RpiPicoUsbModbus[LED_PIN], 1);
         sleep_ms(1000);

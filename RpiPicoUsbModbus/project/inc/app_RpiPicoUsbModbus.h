@@ -6,7 +6,8 @@
 #include "gpio_file.h"
 
 struct gpioConf GPIOapp_RpiPicoUsbModbus[28];
-struct modbus MODBUSapp_RpiPicoUsbModbus;
+struct modbus MODBUSapp_RpiPicoUsbModbus1;
+struct modbusRegisters modbusRegisterSlave1;
 
 void app_RpiPicoUsbModbus_init(void);
 void app_RpiPicoUsbModbus_run(void);

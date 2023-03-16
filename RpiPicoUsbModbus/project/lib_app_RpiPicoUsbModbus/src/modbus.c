@@ -3,9 +3,6 @@
 #define LIGHTMODBUS_DEBUG
 #define LIGHTMODBUS_IMPL
 
-#ifndef REG_COUNT
-#define REG_COUNT 250
-#endif
 #ifndef MAX_MODBUS_SLAVE
 #define MAX_MODBUS_SLAVE 5
 #endif
@@ -20,22 +17,12 @@
 #include "tusb.h"
 
 // // Faire en sorte de pouvoir allouer 5 modbus slave
-// static ModbusSlave slave[5];
 static ModbusSlave slave;
-static int INSTANCE_COUNTER = 0;
-
-static uint16_t registers[REG_COUNT];
-static uint16_t inputRegisters[REG_COUNT];
-static uint8_t coils[REG_COUNT / 8];
-static uint8_t discreteInputs[REG_COUNT / 8];
-
-static uint16_t registers[REG_COUNT];
-static uint16_t inputRegisters[REG_COUNT];
-static uint8_t coils[REG_COUNT / 8];
-static uint8_t discreteInputs[REG_COUNT / 8];
 
 //goes in this callback when a frame is received
 ModbusError registerCallback(const ModbusSlave *slaveID, const ModbusRegisterCallbackArgs *args, ModbusRegisterCallbackResult *result){
+
+    struct modbusRegisters* myCallBackRegister = slaveID->context;
 
     // DEBUG
     char str[1024];
@@ -64,20 +51,31 @@ ModbusError registerCallback(const ModbusSlave *slaveID, const ModbusRegisterCal
             {
                 case MODBUS_HOLDING_REGISTER: 
                     // result->value = gpioConf_info_return(args->index);
+                    if (args->index >= 0 && args->index < REG_COUNT)
+                    {
+                        result->value = *(myCallBackRegister->holdingRegisters + args->index); 
+                    }
                     break;
+
                 case MODBUS_INPUT_REGISTER:   
-                    result->value = inputRegisters[args->index]; 
+                    if (args->index >= 0 && args->index < REG_COUNT)
+                    {
+                        result->value = *(myCallBackRegister->inputRegisters + args->index); 
+                    }
                     break;
+
                 case MODBUS_COIL:
                     debug("inside coil case\r\n");
                     char str1[100];
                     sprintf(str1, "GPIO number %d\r\n", args->index);
                     debug(str1);
-                        // result->value = gpioConf_coil_return(args->index);
+                        result->value = *(myCallBackRegister->coils + args->index); 
                     break;
+
                 case MODBUS_DISCRETE_INPUT:   
-                    result->value = modbusMaskRead(discreteInputs, args->index);
+                    // result->value = modbusMaskRead(discreteInputs, args->index);
                     break;
+
                 default:
                     debug("DEBUG : Type of register to read not recognized\r\n");
                     break;
@@ -89,10 +87,10 @@ ModbusError registerCallback(const ModbusSlave *slaveID, const ModbusRegisterCal
             switch (args->type)
             {
                 case MODBUS_HOLDING_REGISTER: 
-                    registers[args->index] = args->value; 
+                    *(myCallBackRegister->holdingRegisters + args->index) = args->value; 
                     break;
                 case MODBUS_COIL:             
-                    modbusMaskWrite(coils, args->index, args->value); 
+                    // modbusMaskWrite(coils, args->index, args->value); 
                     break;
                 default:            
                     debug("DEBUG : Type of register to write not recognized \r\n")       
@@ -134,36 +132,62 @@ void printErrorInfo(void* error)
 // Declaration of ModbusSlave
 void modbus_init(struct modbus* __this)
 {
-    if (INSTANCE_COUNTER < MAX_MODBUS_SLAVE)
-    {
-        __this->handle = &slave;//[INSTANCE_COUNTER];
-        INSTANCE_COUNTER++;
-         ModbusErrorInfo err = modbusSlaveInit(
-                                (ModbusSlave*)&slave,
+        __this->handle = &slave;
+        ModbusErrorInfo err = modbusSlaveInit(
+                                &slave,
                                 registerCallback,
                                 exceptionCallback,
                                 modbusDefaultAllocator,
                                 modbusSlaveDefaultFunctions,
                                 modbusSlaveDefaultFunctionCount);
-    }
-    else
-    {
-        debug("Cannot define another ModbusSlave\n\r");
-    }
+        printErrorInfo(&err);
 }
 
-void* get_modbus_slave(void)
+// Assign adress to a ModbusSlave
+void modbus_assign_adress(struct modbus* __this, uint8_t adress)
 {
-    return &slave;
+    __this->adress = adress;
 }
 
-void platform_modbus_usb_cdc_xfer(void)
+// void platform_modbus_usb_cdc_xfer(void)
+// {
+//     uint8_t itf;
+//     uint32_t count;
+//     static char in[256];
+//     static int idx = 0;
+//     ModbusErrorInfo err;
+
+//     // connected() check for DTR bit
+//     // Most but not all terminal client set this when making connection
+//     if (tud_cdc_n_connected(MODBUS_PORT))
+//     {
+//         if (tud_cdc_n_available(MODBUS_PORT))
+//         {
+//             count = tud_cdc_n_read(MODBUS_PORT, in + idx, 256 - idx);
+//             idx += count;
+//             err = modbusParseRequestRTU(&slave, 0x01, in, idx);
+
+//             if (modbusIsOk(err))
+//             {
+//                 tud_cdc_n_write(
+//                     MODBUS_PORT,
+//                     modbusSlaveGetResponse(&slave),
+//                     modbusSlaveGetResponseLength(&slave));
+//                 tud_cdc_n_write_flush(MODBUS_PORT);
+//                 memset(in, 0, 256);
+//                 idx = 0;
+//             }
+//         }
+//     }
+// }
+
+void platform_modbus_usb_cdc_xfer(struct modbus* __this)
 {
     uint8_t itf;
     uint32_t count;
     static char in[256];
     static int idx = 0;
-    ModbusErrorInfo err, err2;
+    ModbusErrorInfo err;
 
     // connected() check for DTR bit
     // Most but not all terminal client set this when making connection
@@ -173,36 +197,25 @@ void platform_modbus_usb_cdc_xfer(void)
         {
             count = tud_cdc_n_read(MODBUS_PORT, in + idx, 256 - idx);
             idx += count;
-            debug("\r\nparse");
-            err = modbusParseRequestRTU(get_modbus_slave(), 0x01, in, idx);
-            char str[20];
-            sprintf(str, "\r\nerr=%d", err.source);
-            debug(str);
+            slave.context = __this->modbusRegister;
+            err = modbusParseRequestRTU(__this->handle, __this->adress, in, idx);
+
             if (modbusIsOk(err))
             {
                 tud_cdc_n_write(
                     MODBUS_PORT,
-                    modbusSlaveGetResponse(get_modbus_slave()),
-                    modbusSlaveGetResponseLength(get_modbus_slave()));
+                    modbusSlaveGetResponse(__this->handle),
+                    modbusSlaveGetResponseLength(__this->handle));
                 tud_cdc_n_write_flush(MODBUS_PORT);
                 memset(in, 0, 256);
                 idx = 0;
             }
-            err2 = modbusParseRequestRTU(get_modbus_slave(), 0x02, in, idx);
-            sprintf(str, "\r\nerr2=%d", err2.source);
-            debug(str);
-            if (modbusIsOk(err2))
-            {
-                tud_cdc_n_write(
-                    MODBUS_PORT,
-                    modbusSlaveGetResponse(get_modbus_slave()),
-                    modbusSlaveGetResponseLength(get_modbus_slave()));
-                tud_cdc_n_write_flush(MODBUS_PORT);
-                memset(in, 0, 256);
-                idx = 0;
-            }
-            debug("\r\n\n\n");
         }
     }
+}
+
+void modbus_assign_register(struct modbus* __this, struct modbusRegisters* registre)
+{
+    __this->modbusRegister = registre;
 }
 
