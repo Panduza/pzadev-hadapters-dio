@@ -5,16 +5,16 @@ import logging
 FORMAT = ('%(message)-15s')
 logging.basicConfig(format=FORMAT)
 log = logging.getLogger()
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.WARNING)
 
 
 master = ModbusSerialClient(framer=ModbusRtuFramer, port = '/dev/ttyACM0', stopbits=1, bytesize=8, parity='N', baudrate=115200)
-SLAVE_ID = 0x01
+SLAVE_ID = 0x02
 
 
 connexion = master.connect()
 print(master)
-print("\033[92m-------------------client connected----------------------\033[0m")
+# print("\033[92m-------------------client connected----------------------\033[0m")
 
 
 print("\033[92m-------------------getting PZA----------------------\033[0m")
@@ -44,29 +44,29 @@ for i in range(4):
     else:
         print("\033[92m the I/O is a input pull down \033[0m")
 
-# GPIO 6 to 22
-for i in range(17):
-    print(f"\033[92m-------------------getting type GPIO {i+6} ----------------------\033[0m")
-    getType0 = master.read_holding_registers(16+i, 1, SLAVE_ID)
-    print("\033[92m value of register \033[0m",getType0.registers)
-    if getType0.registers[0]  == 0:
-        print("\033[92m the I/O is a output \033[0m")
-    elif getType0.registers[0]  == 1:
-        print("\033[92m the I/O is a input pull up \033[0m")
-    else:
-        print("\033[92m the I/O is a input pull down \033[0m")
+# # GPIO 6 to 22
+# for i in range(17):
+#     print(f"\033[92m-------------------getting type GPIO {i+6} ----------------------\033[0m")
+#     getType0 = master.read_holding_registers(16+i, 1, SLAVE_ID)
+#     print("\033[92m value of register \033[0m",getType0.registers)
+#     if getType0.registers[0]  == 0:
+#         print("\033[92m the I/O is a output \033[0m")
+#     elif getType0.registers[0]  == 1:
+#         print("\033[92m the I/O is a input pull up \033[0m")
+#     else:
+#         print("\033[92m the I/O is a input pull down \033[0m")
 
-# GPIO 25 to 28
-for i in range(4):
-    print(f"\033[92m-------------------getting type GPIO {i+25} ----------------------\033[0m")
-    getType0 = master.read_holding_registers(35+i, 1, SLAVE_ID)
-    print("\033[92m value of register \033[0m",getType0.registers)
-    if getType0.registers[0]  == 0:
-        print("\033[92m the I/O is a output \033[0m")
-    elif getType0.registers[0]  == 1:
-        print("\033[92m the I/O is a input pull up \033[0m")
-    else:
-        print("\033[92m the I/O is a input pull down \033[0m")
+# # GPIO 25 to 28
+# for i in range(4):
+#     print(f"\033[92m-------------------getting type GPIO {i+25} ----------------------\033[0m")
+#     getType0 = master.read_holding_registers(35+i, 1, SLAVE_ID)
+#     print("\033[92m value of register \033[0m",getType0.registers)
+#     if getType0.registers[0]  == 0:
+#         print("\033[92m the I/O is a output \033[0m")
+#     elif getType0.registers[0]  == 1:
+#         print("\033[92m the I/O is a input pull up \033[0m")
+#     else:
+#         print("\033[92m the I/O is a input pull down \033[0m")
 
 
 # print("\033[92m-------------------READ COILS !!!!!!----------------------\033[0m")

@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "tusb_config.h": "c",
+        "app_rpipicousbmodbus.h": "c"
+    }
+}
