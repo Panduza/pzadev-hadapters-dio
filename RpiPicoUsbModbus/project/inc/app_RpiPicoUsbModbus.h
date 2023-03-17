@@ -5,7 +5,7 @@
 #include "modbus.h"
 #include "gpio_file.h"
 
-struct gpioConf GPIOapp_RpiPicoUsbModbus[28];
+struct gpioConf GPIOapp_RpiPicoUsbModbus1[28];
 struct modbus MODBUSapp_RpiPicoUsbModbus1;
 struct modbusRegisters modbusRegisterSlave1;
 
@@ -14,5 +14,10 @@ void app_RpiPicoUsbModbus_run(void);
 
 void declare_all_GPIO(void);
 void init_all_GPIO(void);
+
+void update_registers_init(struct modbus* modbusSlaveToUpdate);
+void update_registers(struct modbus* modbusSlaveToUpdate, struct gpioConf* gpioToEvaluate);
+
+uint16_t number_gpio(void);
 
 #endif

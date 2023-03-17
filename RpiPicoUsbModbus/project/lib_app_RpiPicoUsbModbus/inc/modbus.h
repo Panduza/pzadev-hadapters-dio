@@ -19,13 +19,13 @@ struct modbus
 {
     void* handle;
     uint8_t adress;
-    void* modbusRegister;
+    struct modbusRegisters* modbusRegister;
 };
 
 void modbus_assign_adress(struct modbus* __this, uint8_t adress);
+void modbus_assign_register(struct modbus* __this, struct modbusRegisters* slaveRegister);
 void modbus_init(struct modbus* __this);
-void printErrorInfo(void* err);
 
 // void platform_modbus_usb_cdc_xfer(void);
-void platform_modbus_usb_cdc_xfer(struct modbus* __this);
+void modbus_platform_modbus_usb_cdc_xfer(struct modbus* __this);
 #endif

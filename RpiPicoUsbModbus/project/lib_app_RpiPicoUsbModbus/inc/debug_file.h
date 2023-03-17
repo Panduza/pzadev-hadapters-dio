@@ -3,6 +3,7 @@
 
 #include "pico/stdlib.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 // CONSTANTS
 #define UART_TX_PIN 4
