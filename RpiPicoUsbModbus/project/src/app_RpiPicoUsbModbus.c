@@ -115,7 +115,7 @@ void update_GPIOdir_registers(struct modbus* modbusSlaveToUpdate, struct gpioCon
         }
         else
         {
-            modbusSlaveToUpdate->modbusRegister->holdingRegisters[GPIO_DIR_VALUE_MEMORY_EMPLACEMENT + i] = 0x04; // Not a GPIO
+            modbusSlaveToUpdate->modbusRegister->holdingRegisters[GPIO_DIR_VALUE_MEMORY_EMPLACEMENT + i] = 0xFF; // Not a GPIO
         }
     }
 }

@@ -109,8 +109,49 @@ print(master)
 # print("getROK = ", getROK)
 # print("Value of register = ", getROK.registers[0])
 
-print("\033[92m-------------------READ HOLDING REGISTERS !!!!!!----------------------\033[0m")
-for i in range(70,97):
+# print("\033[92m-------------------READ HOLDING REGISTERS !!!!!!----------------------\033[0m")
+# for i in range(70,97):
+#     getROK = master.read_holding_registers(i, 1, SLAVE_ADRESS)
+#     # print("\n\rgetROK = ", getROK)
+#     print("Value of register[", i, "] = ", getROK.registers[0])
+
+print("-------------------GET THE TYPES----------------------")
+
+# GPIO 0 to 28
+for i in range(27):
+    # print(f"-------------------getting type GPIO {i} ----------------------")
+    getType0 = master.read_holding_registers(10+i, 1, SLAVE_ADRESS)
+    # print(" value of register ",getType0.registers)
+    if getType0.registers[0] == 0:
+        print("The I/O ", i, " is an output ")
+    elif getType0.registers[0]  == 1:
+        print("The I/O ",i," is a input pull up ")
+    elif getType0.registers[0]  == 2:
+        print("The I/O ",i," is a input pull down ")
+    elif getType0.registers[0]  == 255:
+        print("The register : ", i, " does not correspond to an I/O ")
+        
+NUMBER_OF_IO = 28
+print("-------------------READ INPUT STATE----------------------")
+INPUT_OFFSET = 40
+for i in range(INPUT_OFFSET,INPUT_OFFSET+NUMBER_OF_IO):
     getROK = master.read_holding_registers(i, 1, SLAVE_ADRESS)
     # print("\n\rgetROK = ", getROK)
-    print("Value of register[", i, "] = ", getROK.registers[0])
+    # print("Value of register[", i, "] = ", getROK.registers[0])
+    if (getROK.registers[0] != 0 and getROK.registers[0] != 1) :
+        print("The register : ", i-INPUT_OFFSET, " is not an Input ")
+    else:
+        print("State of the Input ", i-INPUT_OFFSET, " = ", getROK.registers[0])
+        
+print("-------------------READ OUTPUT STATE----------------------")
+OUTPUT_OFFSET = 70
+for i in range(OUTPUT_OFFSET,OUTPUT_OFFSET+NUMBER_OF_IO):
+    getROK = master.read_holding_registers(i, 1, SLAVE_ADRESS)
+    # print("\n\rgetROK = ", getROK)
+    # print("Value of register[", i, "] = ", getROK.registers[0])
+    if (getROK.registers[0] != 0 and getROK.registers[0] != 1) :
+        print("The register : ", i-OUTPUT_OFFSET, " is not an Output ")
+        if (i==25+OUTPUT_OFFSET):
+            print(getROK.registers[0])
+    else:
+        print("State of the Output ", i-OUTPUT_OFFSET, " = ", getROK.registers[0])
