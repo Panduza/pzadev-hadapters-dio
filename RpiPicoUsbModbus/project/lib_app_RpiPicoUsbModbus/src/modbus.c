@@ -16,7 +16,6 @@
 #include "tusb_config.h"
 #include "tusb.h"
 
-// // Faire en sorte de pouvoir allouer 5 modbus slave
 static ModbusSlave slave;
 
 //goes in this callback when a frame is received
@@ -74,7 +73,7 @@ ModbusError registerCallback(const ModbusSlave *slaveID, const ModbusRegisterCal
                     break;
 
                 case MODBUS_DISCRETE_INPUT:   
-                    result->value = modbusMaskRead((uint16_t)*(myCallBackRegister->inputRegisters), args->index);
+                    result->value = modbusMaskRead((uint8_t*)myCallBackRegister->inputRegisters, args->index);
                     break;
 
                 default:
@@ -91,7 +90,7 @@ ModbusError registerCallback(const ModbusSlave *slaveID, const ModbusRegisterCal
                     myCallBackRegister->holdingRegisters[args->index] = args->value; 
                     break;
                 case MODBUS_COIL:             
-                    modbusMaskWrite((uint16_t)*(myCallBackRegister->coils), args->index, args->value); 
+                    modbusMaskWrite((uint8_t*)myCallBackRegister->coils, args->index, args->value); 
                     break;
                 default:            
                     debug("DEBUG : Type of register to write not recognized \r\n")       
@@ -113,8 +112,6 @@ ModbusError exceptionCallback(const ModbusSlave *slave,  uint8_t function, Modbu
 	return MODBUS_OK;
 
 }
-
-
 
 // Declaration of ModbusSlave
 void modbus_init(struct modbus* __this)
@@ -144,38 +141,6 @@ void modbus_assign_adress(struct modbus* __this, uint8_t adress)
 {
     __this->adress = adress;
 }
-
-// void platform_modbus_usb_cdc_xfer(void)
-// {
-//     uint8_t itf;
-//     uint32_t count;
-//     static char in[256];
-//     static int idx = 0;
-//     ModbusErrorInfo err;
-
-//     // connected() check for DTR bit
-//     // Most but not all terminal client set this when making connection
-//     if (tud_cdc_n_connected(MODBUS_PORT))
-//     {
-//         if (tud_cdc_n_available(MODBUS_PORT))
-//         {
-//             count = tud_cdc_n_read(MODBUS_PORT, in + idx, 256 - idx);
-//             idx += count;
-//             err = modbusParseRequestRTU(&slave, 0x01, in, idx);
-
-//             if (modbusIsOk(err))
-//             {
-//                 tud_cdc_n_write(
-//                     MODBUS_PORT,
-//                     modbusSlaveGetResponse(&slave),
-//                     modbusSlaveGetResponseLength(&slave));
-//                 tud_cdc_n_write_flush(MODBUS_PORT);
-//                 memset(in, 0, 256);
-//                 idx = 0;
-//             }
-//         }
-//     }
-// }
 
 void modbus_platform_modbus_usb_cdc_xfer(struct modbus* __this)
 {

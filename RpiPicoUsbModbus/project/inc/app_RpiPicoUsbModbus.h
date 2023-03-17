@@ -16,7 +16,9 @@ void declare_all_GPIO(void);
 void init_all_GPIO(void);
 
 void update_registers_init(struct modbus* modbusSlaveToUpdate);
-void update_registers(struct modbus* modbusSlaveToUpdate, struct gpioConf* gpioToEvaluate);
+void update_GPIOdir_registers(struct modbus* modbusSlaveToUpdate, struct gpioConf* gpioToEvaluate);
+void update_GPIO_IN_value_registers(struct modbus* modbusSlaveToUpdate, struct gpioConf* gpioToEvaluate);
+void update_GPIO_OUT_value_registers(struct modbus* modbusSlaveToUpdate, struct gpioConf* gpioToEvaluate);
 
 uint16_t number_gpio(void);
 
