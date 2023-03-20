@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "lightmodbus.h": "c",
+        "ostream": "c",
+        "debug_file.h": "c",
+        "functional": "c"
+    }
+}

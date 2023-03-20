@@ -23,7 +23,11 @@ set(PICO_EXAMPLES_PATH ${PROJECT_SOURCE_DIR})
 pico_sdk_init()
 
 set(PROJECT_SOURCES
-    ${CMAKE_CURRENT_LIST_DIR}/src/firmware.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/main.c
+    ${CMAKE_CURRENT_LIST_DIR}/lib_app_RpiPicoUsbModbus/src/modbus.c
+    ${CMAKE_CURRENT_LIST_DIR}/lib_app_RpiPicoUsbModbus/src/gpio_file.c
+    ${CMAKE_CURRENT_LIST_DIR}/lib_app_RpiPicoUsbModbus/src/debug_file.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/app_RpiPicoUsbModbus.c
 )
 # if (TARGET tinyusb_device)
 add_executable(${CMAKE_PROJECT_NAME} ${PROJECT_SOURCES})
@@ -31,6 +35,8 @@ add_executable(${CMAKE_PROJECT_NAME} ${PROJECT_SOURCES})
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC
     ${liblightmodbus_SOURCE_DIR}/include/lightmodbus
     ${CMAKE_CURRENT_LIST_DIR}/inc/
+    ${CMAKE_CURRENT_LIST_DIR}/lib_app_RpiPicoUsbModbus/inc/
+    ${CMAKE_CURRENT_LIST_DIR}/lib_app_RpiPicoUsbModbus/src/
 )
 
 # pull in common dependencies
@@ -42,13 +48,6 @@ pico_enable_stdio_uart(${CMAKE_PROJECT_NAME}  1)
 
 # create binaries
 pico_add_extra_outputs(${CMAKE_PROJECT_NAME} )
-
-# add url via pico_set_program_url
-# example_auto_set_url(${CMAKE_PROJECT_NAME} )
-
-# elseif(PICO_ON_DEVICE)
-#     message(WARNING "not building ${CMAKE_PROJECT_NAME}  because TinyUSB submodule is not initialized in the SDK")
-# endif()
 
 # USB definition
 add_definitions(-DUSBD_VID=0x16C0) # ID_VENDOR_ID
