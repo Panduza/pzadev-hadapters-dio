@@ -11,7 +11,7 @@
 
 #include "debug_file.h"
 #include "modbus.h"
-#include "gpio_file.h"
+// #include "gpio_file.h"
 #include "lightmodbus/lightmodbus.h"
 #include "tusb_config.h"
 #include "tusb.h"
@@ -21,28 +21,30 @@ static ModbusSlave slave;
 //goes in this callback when a frame is received
 ModbusError registerCallback(const ModbusSlave *slaveID, const ModbusRegisterCallbackArgs *args, ModbusRegisterCallbackResult *result){
 
-    struct modbusRegisters* myCallBackRegister = slaveID->context;
+    struct modbus* myModbusSlave = slaveID->context;
+    struct modbusRegisters* myCallBackRegister = myModbusSlave->modbusRegister;
 
-    // DEBUG
-    char str[1024];
-    sprintf(str,"Register query: %s\r\nType query: %s\r\n@: %d\r\nValue: %d\r\nFunction: %d\r\n\n",
-        modbusRegisterQueryStr(args->query),
-        modbusDataTypeStr(args->type),
-		args->index,
-		(uint)args->value,
-		args->function
-	);
-    debug(str);
-    // FIN DEBUG
+    result->exceptionCode = MODBUS_EXCEP_NONE;
 
     switch (args->query)
     {
         // R/W access check
-        case MODBUS_REGQ_R_CHECK:
-            result->exceptionCode = ( args->index >= 0 && args->index < REG_COUNT ) ? MODBUS_EXCEP_NONE : MODBUS_EXCEP_ILLEGAL_ADDRESS;
-            break;
         case MODBUS_REGQ_W_CHECK:
-            result->exceptionCode = ( args->index >= 0 && args->index < REG_COUNT ) ? MODBUS_EXCEP_NONE : MODBUS_EXCEP_ILLEGAL_ADDRESS;
+            if (args->index < 0 && args->index >= REG_COUNT )
+            {
+                result->exceptionCode = MODBUS_EXCEP_ILLEGAL_ADDRESS;
+            }
+            else if (modbusMaskRead(myCallBackRegister->access_coils, args->index) == READ_ONLY)
+            {
+                result->exceptionCode = MODBUS_EXCEP_ILLEGAL_VALUE;
+            }
+            
+            break;
+        case MODBUS_REGQ_R_CHECK:
+            if (args->index < 0 && args->index >= REG_COUNT )
+            {
+                result->exceptionCode = MODBUS_EXCEP_ILLEGAL_ADDRESS;
+            }
             break;
  
         // Read register        
@@ -65,11 +67,10 @@ ModbusError registerCallback(const ModbusSlave *slaveID, const ModbusRegisterCal
                     break;
 
                 case MODBUS_COIL:
-                    debug("inside coil case\r\n");
-                    char str1[100];
-                    sprintf(str1, "GPIO number %d\r\n", args->index);
-                    debug(str1);
-                        result->value = myCallBackRegister->coils[args->index];
+                    if (args->index >= 0 && args->index < REG_COUNT/8)
+                    {
+                        result->value = modbusMaskRead(myCallBackRegister->coils, args->index);
+                    }
                     break;
 
                 case MODBUS_DISCRETE_INPUT:   
@@ -89,8 +90,12 @@ ModbusError registerCallback(const ModbusSlave *slaveID, const ModbusRegisterCal
                 case MODBUS_HOLDING_REGISTER: 
                     myCallBackRegister->holdingRegisters[args->index] = args->value; 
                     break;
-                case MODBUS_COIL:             
-                    modbusMaskWrite((uint8_t*)myCallBackRegister->coils, args->index, args->value); 
+                case MODBUS_COIL: 
+                    if (args->index >= 0 && args->index < REG_COUNT/8)
+                    {
+                        modbusMaskWrite((uint8_t*)myCallBackRegister->coils, args->index, args->value); 
+                        myModbusSlave->modbusWriteRegisterCallback(myModbusSlave, args->index);
+                    }
                     break;
                 default:            
                     debug("DEBUG : Type of register to write not recognized \r\n")       
@@ -106,9 +111,8 @@ ModbusError registerCallback(const ModbusSlave *slaveID, const ModbusRegisterCal
 }
 
 ModbusError exceptionCallback(const ModbusSlave *slave,  uint8_t function, ModbusExceptionCode code){
-    char exceptionInfo[15];
-    debug("in error register callback\r\n");
     debug(modbusExceptionCodeStr(code)); // send the error cause to the debug
+    debug("\n\r");
 	return MODBUS_OK;
 
 }
@@ -161,7 +165,7 @@ void modbus_platform_modbus_usb_cdc_xfer(struct modbus* __this)
 
             // modbusRegisters adress of the modbus slave pass to the Parse instruction using 
             // the *void context pointer of ModbusSlave struct
-            slave.context = __this->modbusRegister; 
+            slave.context = __this; 
             
             err = modbusParseRequestRTU(__this->handle, __this->adress, in, idx);
 
@@ -182,5 +186,10 @@ void modbus_platform_modbus_usb_cdc_xfer(struct modbus* __this)
 void modbus_assign_register(struct modbus* __this, struct modbusRegisters* slaveRegister)
 {
     __this->modbusRegister = slaveRegister;
+}
+
+void modbus_assign_callback(struct modbus* __this, writeRegisterCb registerWriteCallBack)
+{
+    __this->modbusWriteRegisterCallback = registerWriteCallBack;
 }
 

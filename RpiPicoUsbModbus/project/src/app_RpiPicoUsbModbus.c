@@ -2,10 +2,12 @@
 #include "app_RpiPicoUsbModbus.h"
 
 #define LED_PIN 25
-
+#define SIZE_GPIO 28
 #define GPIO_DIR_VALUE_MEMORY_EMPLACEMENT 10
-#define GPIO_IN_VALUE_MEMORY_EMPLACEMENT 40
-#define GPIO_OUT_VALUE_MEMORY_EMPLACEMENT 70
+
+struct gpioConf GPIOapp_RpiPicoUsbModbus1[SIZE_GPIO] = {0};
+struct modbus MODBUSapp_RpiPicoUsbModbus1 = {0};
+struct modbusRegisters modbusRegisterSlave1 = {0};
 
 void app_RpiPicoUsbModbus_init(void)
 {
@@ -17,47 +19,52 @@ void app_RpiPicoUsbModbus_init(void)
     declare_all_GPIO();
     init_all_GPIO();
 
-    // Declare, assign adress and a register to a modbus slave
+    // Declare, assign adress, register, callback to a modbus slave
     modbus_init(&MODBUSapp_RpiPicoUsbModbus1);
     modbus_assign_adress(&MODBUSapp_RpiPicoUsbModbus1, 0x01);
     modbus_assign_register(&MODBUSapp_RpiPicoUsbModbus1, &modbusRegisterSlave1);
-
+    modbus_assign_callback(&MODBUSapp_RpiPicoUsbModbus1, modbusMyWriteRegistersCallBack);
+    MODBUSapp_RpiPicoUsbModbus1.context = GPIOapp_RpiPicoUsbModbus1; // Link MOBDUSapp_RpiPicoUsbModbus1 with GPIOapp_RpiPicoUsbModbus1
+    
     // Initialize the 4 first holding registers to defined values
     update_registers_init(&MODBUSapp_RpiPicoUsbModbus1);
 
+    //Initialize LED in output, active state
+    gpioConf_change_dir(&GPIOapp_RpiPicoUsbModbus1[LED_PIN], GPIO_OUT);
     gpioConf_change_output_state(&GPIOapp_RpiPicoUsbModbus1[LED_PIN], 1);
+
 }
 
 void app_RpiPicoUsbModbus_run(void)
 {
         update_GPIOdir_registers(&MODBUSapp_RpiPicoUsbModbus1, GPIOapp_RpiPicoUsbModbus1);
-        update_GPIO_IN_value_registers(&MODBUSapp_RpiPicoUsbModbus1, GPIOapp_RpiPicoUsbModbus1);
-        update_GPIO_OUT_value_registers(&MODBUSapp_RpiPicoUsbModbus1, GPIOapp_RpiPicoUsbModbus1);;
+        update_modbus_registers_access(&MODBUSapp_RpiPicoUsbModbus1, GPIOapp_RpiPicoUsbModbus1);
+        update_GPIO_Registers(&MODBUSapp_RpiPicoUsbModbus1, GPIOapp_RpiPicoUsbModbus1);
         modbus_platform_modbus_usb_cdc_xfer(&MODBUSapp_RpiPicoUsbModbus1);
 }
 
 void declare_all_GPIO(void){
     debug("GPIO DECLARATION\r\n");
-    uint8_t sizeGPIO = sizeof(GPIOapp_RpiPicoUsbModbus1)/ sizeof(GPIOapp_RpiPicoUsbModbus1[0]);
-    for (int i = 0; i< sizeGPIO; i++){
+    for (int i = 0; i< SIZE_GPIO; i++){
         GPIOapp_RpiPicoUsbModbus1[i].id = i;
-        GPIOapp_RpiPicoUsbModbus1[i].IN_pull_up = 0;
+        GPIOapp_RpiPicoUsbModbus1[i].dir = GPIO_IN;
+        GPIOapp_RpiPicoUsbModbus1[i].IN_pull_up = PULL_DOWN;
         GPIOapp_RpiPicoUsbModbus1[i].OUT_active = 0;
+        GPIOapp_RpiPicoUsbModbus1[i].access = 0; // 0 = RO, 1 = RW
 
         if( i == 4 || i == 5 || i ==  23 || i == 24) 
         {
+            // Those are not GPIO's
             GPIOapp_RpiPicoUsbModbus1[i].id = 0xff;
+            GPIOapp_RpiPicoUsbModbus1[i].access = 0;
         }
-
-        GPIOapp_RpiPicoUsbModbus1[i].dir = (i!=LED_PIN) ? GPIO_IN : GPIO_OUT; // Set LED GPIO in OUT mode, others in IN mode
     }
 }
 
 void init_all_GPIO(void)
 {
     debug("GPIO INITIALIZATION\r\n");
-    uint8_t sizeGPIO = sizeof(GPIOapp_RpiPicoUsbModbus1)/ sizeof(GPIOapp_RpiPicoUsbModbus1[0]);
-    for (int i =0; i< sizeGPIO; i++)
+    for (int i =0; i< SIZE_GPIO; i++)
     {
         gpioConf_initialization(GPIOapp_RpiPicoUsbModbus1+i);
     }
@@ -66,9 +73,8 @@ void init_all_GPIO(void)
 uint16_t gpioConf_coil_return(uint index)
 {
     uint16_t result;
-    if (index >=0 && index < sizeof(GPIOapp_RpiPicoUsbModbus1)/ sizeof(GPIOapp_RpiPicoUsbModbus1[0]))
+    if (index >=0 && index < SIZE_GPIO)
     {
-        // result = gpio_get(GPIOapp_RpiPicoUsbModbus1[index].id);
         result = gpioConf_get_state(&GPIOapp_RpiPicoUsbModbus1[index]);
     }
     else
@@ -90,19 +96,17 @@ void update_registers_init(struct modbus* modbusSlaveToUpdate)
 
 void update_GPIOdir_registers(struct modbus* modbusSlaveToUpdate, struct gpioConf* gpioToEvaluate)
 {
-    uint16_t sizeGPIO = sizeof(GPIOapp_RpiPicoUsbModbus1)/sizeof(GPIOapp_RpiPicoUsbModbus1[0]);
-
     // modbusSlaveToUpdate->modbusRegister is a pointer to the modbusRegisters instance 
-    for (int i=0; i<sizeGPIO; i++)
+    for (int i=0; i<SIZE_GPIO; i++)
     {
         if ((gpioToEvaluate+i)->id != 0xff)
         {
             if ((gpioToEvaluate+i)->dir == GPIO_IN)
             {
-                if((gpioToEvaluate+i)->IN_pull_up){
+                if((gpioToEvaluate+i)->IN_pull_up == PULL_UP){
                     modbusSlaveToUpdate->modbusRegister->holdingRegisters[GPIO_DIR_VALUE_MEMORY_EMPLACEMENT + i] = 0x01;
                 }
-                else if(!(gpioToEvaluate+i)->IN_pull_up){
+                else if((gpioToEvaluate+i)->IN_pull_up == PULL_DOWN){
                     modbusSlaveToUpdate->modbusRegister->holdingRegisters[GPIO_DIR_VALUE_MEMORY_EMPLACEMENT + i] = 0x02;
                 }
                 else{
@@ -120,45 +124,59 @@ void update_GPIOdir_registers(struct modbus* modbusSlaveToUpdate, struct gpioCon
     }
 }
 
-void update_GPIO_IN_value_registers(struct modbus* modbusSlaveToUpdate, struct gpioConf* gpioToEvaluate)
+void update_modbus_registers_access(struct modbus* modbusSlaveToUpdate, struct gpioConf* gpioToEvaluate)
 {
-    uint16_t sizeGPIO = sizeof(GPIOapp_RpiPicoUsbModbus1)/sizeof(GPIOapp_RpiPicoUsbModbus1[0]);
-
-    for (int i=0; i<sizeGPIO; i++)
+    for (int i=0; i< SIZE_GPIO; i++)
     {
-        if ((gpioToEvaluate+i)->id != 0xff && (gpioToEvaluate+i)->dir == GPIO_IN)
+        if (gpioToEvaluate[i].dir == GPIO_OUT)
         {
-            modbusSlaveToUpdate->modbusRegister->holdingRegisters[GPIO_IN_VALUE_MEMORY_EMPLACEMENT + i] = gpioConf_get_state(gpioToEvaluate+i);
+            // R/W
+            modbusSlaveToUpdate->modbusRegister->access_coils[i>>3] |= (1<<(i&7));
         }
-        else{
-            modbusSlaveToUpdate->modbusRegister->holdingRegisters[GPIO_IN_VALUE_MEMORY_EMPLACEMENT + i] = 0xff; // Not an input
+        if (gpioToEvaluate[i].dir == GPIO_IN || gpioToEvaluate[i].id == 0xFF)
+        {
+            // Read ONLY
+            modbusSlaveToUpdate->modbusRegister->access_coils[i>>3] &= ~(1<<(i&7));
         }
     }
 }
 
-void update_GPIO_OUT_value_registers(struct modbus* modbusSlaveToUpdate, struct gpioConf* gpioToEvaluate)
+void update_GPIO_Registers(struct modbus* modbusSlaveToUpdate, struct gpioConf* gpioToEvaluate)
 {
-    uint16_t sizeGPIO = sizeof(GPIOapp_RpiPicoUsbModbus1)/sizeof(GPIOapp_RpiPicoUsbModbus1[0]);
-
-    for (int i=0; i<sizeGPIO; i++)
+    for (int i=0; i<SIZE_GPIO; i++)
     {
-        if ((gpioToEvaluate+i)->id != 0xff && (gpioToEvaluate+i)->dir == GPIO_OUT)
+        if (gpioConf_get_state(gpioToEvaluate+i))
         {
-            modbusSlaveToUpdate->modbusRegister->holdingRegisters[GPIO_OUT_VALUE_MEMORY_EMPLACEMENT + i] = gpioConf_get_state(gpioToEvaluate+i);
+            (modbusSlaveToUpdate->modbusRegister->coils[i>>3]) |= (1<<(i&7));
         }
-        else{
-            modbusSlaveToUpdate->modbusRegister->holdingRegisters[GPIO_OUT_VALUE_MEMORY_EMPLACEMENT + i] = 0xff; // Not an output
+        else
+        {
+            modbusSlaveToUpdate->modbusRegister->coils[i>>3] &= ~(1<<(i&7));
         }
     }
 }
 
 uint16_t number_gpio(void)
 {
-    uint16_t sizeGPIO = sizeof(GPIOapp_RpiPicoUsbModbus1)/sizeof(GPIOapp_RpiPicoUsbModbus1[0]);
     uint16_t IO_count = 0;
-    for (int i=0; i<sizeGPIO; i++)
+    for (int i=0; i<SIZE_GPIO; i++)
     {
         if (GPIOapp_RpiPicoUsbModbus1[i].id != 255) IO_count++; 
     }
     return IO_count;
+}
+
+uint8_t modbusMyWriteRegistersCallBack(struct modbus* slave, uint16_t index)
+{
+    uint8_t error = 0;
+    uint8_t coil = index>>3;
+    uint8_t mask = (1<<(index&7));
+    struct gpioConf* myGPIO = slave->context;
+    
+    // Changing output state
+    gpioConf_change_output_state(myGPIO+index,(slave->modbusRegister->coils[coil]) & mask);
+    // Check for output really changed
+    error = (gpioConf_get_state(myGPIO+index) != ((slave->modbusRegister->coils[coil]) & mask)) ? 1:0;
+
+    return error;
 }

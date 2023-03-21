@@ -37,7 +37,7 @@ void gpioConf_change_dir(struct gpioConf* __this, bool dir)
 {
     if (__this->dir != dir) 
     {
-        __this->dir =  (dir == 0) ? GPIO_IN : GPIO_OUT;
+        __this->dir =  (dir == GPIO_IN) ? GPIO_IN : GPIO_OUT;
         gpio_set_dir(__this->id, __this->dir);
     }
     else
@@ -57,7 +57,9 @@ void gpioConf_change_output_state(struct gpioConf* __this, bool OUT_active)
         }
         else
         {
-            debug("GPIO already in the state asked\r\n");
+            char str[254];
+            sprintf(str, "GPIO %d already in the state asked\r\n", __this->id);
+            debug(str);
         }
     }
     else
@@ -72,7 +74,7 @@ void gpioConf_change_input_pull(struct gpioConf* __this, bool IN_pull_up)
     {
         if (__this->IN_pull_up != IN_pull_up)
         {
-            __this->IN_pull_up = (IN_pull_up == 0) ? 0:1;
+            __this->IN_pull_up = (IN_pull_up == PULL_DOWN) ? PULL_DOWN:PULL_UP;
             if (__this->IN_pull_up)
             {
                 gpio_pull_up(__this->id);
