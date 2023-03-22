@@ -11,7 +11,6 @@
 
 #include "debug_file.h"
 #include "modbus.h"
-// #include "gpio_file.h"
 #include "lightmodbus/lightmodbus.h"
 #include "tusb_config.h"
 #include "tusb.h"
@@ -34,9 +33,15 @@ ModbusError registerCallback(const ModbusSlave *slaveID, const ModbusRegisterCal
             {
                 result->exceptionCode = MODBUS_EXCEP_ILLEGAL_ADDRESS;
             }
-            else if (modbusMaskRead(myCallBackRegister->access_coils, args->index) == READ_ONLY)
+            // Access to coil 
+            else if ((modbusMaskRead(myCallBackRegister->access_coils, args->index) == READ_ONLY) && (args->type == MODBUS_COIL) )
             {
                 result->exceptionCode = MODBUS_EXCEP_ILLEGAL_VALUE;
+            }
+            // Access to holding
+            else if ((modbusMaskRead(myCallBackRegister->access_holding, args->index) == READ_ONLY) && (args->type == MODBUS_HOLDING_REGISTER))
+            {
+                result->exceptionCode = MODBUS_EXCEP_ILLEGAL_ADDRESS;
             }
             
             break;
@@ -89,12 +94,14 @@ ModbusError registerCallback(const ModbusSlave *slaveID, const ModbusRegisterCal
             {
                 case MODBUS_HOLDING_REGISTER: 
                     myCallBackRegister->holdingRegisters[args->index] = args->value; 
+                    result->exceptionCode = myModbusSlave->modbusWriteHoldingRegisterCallback(myModbusSlave, args->index);
                     break;
                 case MODBUS_COIL: 
                     if (args->index >= 0 && args->index < REG_COUNT/8)
                     {
                         modbusMaskWrite((uint8_t*)myCallBackRegister->coils, args->index, args->value); 
-                        myModbusSlave->modbusWriteRegisterCallback(myModbusSlave, args->index);
+                        // Callback to writecoilregister 
+                        result -> exceptionCode =  myModbusSlave->modbusWriteCoilRegisterCallback(myModbusSlave, args->index);
                     }
                     break;
                 default:            
@@ -188,8 +195,13 @@ void modbus_assign_register(struct modbus* __this, struct modbusRegisters* slave
     __this->modbusRegister = slaveRegister;
 }
 
-void modbus_assign_callback(struct modbus* __this, writeRegisterCb registerWriteCallBack)
+void modbus_assign_writeCoilRegistercallback(struct modbus* __this, writeCoilRegisterCb registerWriteCoilCallBack)
 {
-    __this->modbusWriteRegisterCallback = registerWriteCallBack;
+    __this->modbusWriteCoilRegisterCallback = registerWriteCoilCallBack;
+}
+
+void modbus_assign_writeHoldingRegistercallback(struct modbus* __this, writeHoldingRegisterCb registerWriteHoldingCallBack)
+{
+    __this->modbusWriteHoldingRegisterCallback = registerWriteHoldingCallBack;
 }
 

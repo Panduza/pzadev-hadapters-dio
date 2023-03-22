@@ -16,7 +16,8 @@ void update_GPIOdir_registers(struct modbus* modbusSlaveToUpdate, struct gpioCon
 void update_modbus_registers_access(struct modbus* modbusSlaveToUpdate, struct gpioConf* gpioToEvaluate);
 void update_GPIO_Registers(struct modbus* modbusSlaveToUpdate, struct gpioConf* gpioToEvaluate);
 
-uint8_t modbusMyWriteRegistersCallBack(struct modbus *slave, uint16_t index);
+uint8_t modbusMyWriteCoilRegistersCallBack(struct modbus *slave, uint16_t index);
+uint8_t modbusMyWriteHoldingRegistersCallBack(struct modbus* slave, uint16_t index);
 
 uint16_t number_gpio(void);
 

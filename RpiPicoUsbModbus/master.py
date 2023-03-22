@@ -102,10 +102,12 @@ print(master)
 #     else:
 #         print("\033[92m value of coil is 1 \033[0m")
 
+# registre = 4
+# value = 0
 # print("\033[92m-------------------WRITE HOLDING REGISTERS !!!!!!----------------------\033[0m")
-# getWOK = master.write_registers(100, 0x06, SLAVE_ADRESS)
+# getWOK = master.write_registers(registre, value, SLAVE_ADRESS)
 # print("getWOK = ", getWOK)
-# getROK = master.read_holding_registers(100, 1, SLAVE_ADRESS)
+# getROK = master.read_holding_registers(registre, 1, SLAVE_ADRESS)
 # print("getROK = ", getROK)
 # print("Value of register = ", getROK.registers[0])
 
@@ -156,16 +158,16 @@ print(master)
 #     else:
 #         print("State of the Output ", i-OUTPUT_OFFSET, " = ", getROK.registers[0])
 
-values = [0]
-print("-------------------WRITE COIL----------------------")
-# for i in range (25,26):
-#     getWOK = master.write_coils(i,values,SLAVE_ADRESS)
-#     print(getWOK)
-#     print("The values that were written are = ", values)
+# values = [0]
+# print("-------------------WRITE COIL----------------------")
+# # for i in range (25,26):
+# #     getWOK = master.write_coils(i,values,SLAVE_ADRESS)
+# #     print(getWOK)
+# #     print("The values that were written are = ", values)
 
-getWOK = master.write_coils(25,values,SLAVE_ADRESS)
-print(getWOK)
-print("The values that were written are = ", values)
+# getWOK = master.write_coils(0,values,SLAVE_ADRESS)
+# print(getWOK)
+# print("The values that were written are = ", values)
 
         
 print("-------------------READ COIL----------------------")

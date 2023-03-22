@@ -23,7 +23,8 @@ void app_RpiPicoUsbModbus_init(void)
     modbus_init(&MODBUSapp_RpiPicoUsbModbus1);
     modbus_assign_adress(&MODBUSapp_RpiPicoUsbModbus1, 0x01);
     modbus_assign_register(&MODBUSapp_RpiPicoUsbModbus1, &modbusRegisterSlave1);
-    modbus_assign_callback(&MODBUSapp_RpiPicoUsbModbus1, modbusMyWriteRegistersCallBack);
+    modbus_assign_writeCoilRegistercallback(&MODBUSapp_RpiPicoUsbModbus1, modbusMyWriteCoilRegistersCallBack);
+    modbus_assign_writeHoldingRegistercallback(&MODBUSapp_RpiPicoUsbModbus1, modbusMyWriteHoldingRegistersCallBack);
     MODBUSapp_RpiPicoUsbModbus1.context = GPIOapp_RpiPicoUsbModbus1; // Link MOBDUSapp_RpiPicoUsbModbus1 with GPIOapp_RpiPicoUsbModbus1
     
     // Initialize the 4 first holding registers to defined values
@@ -87,11 +88,24 @@ uint16_t gpioConf_coil_return(uint index)
 
 void update_registers_init(struct modbus* modbusSlaveToUpdate)
 {
-    // modbusSlaveToUpdate->modbusRegister is a pointer to the modbus registers instance 
+    // Initialize holding values
     modbusSlaveToUpdate->modbusRegister->holdingRegisters[0] = 0x505A; // "PZ"
     modbusSlaveToUpdate->modbusRegister->holdingRegisters[1] = 0x4121; // "A!""
     modbusSlaveToUpdate->modbusRegister->holdingRegisters[2] = 0x01;
     modbusSlaveToUpdate->modbusRegister->holdingRegisters[3] = number_gpio(); // number of gpio configured
+
+    // Initialize holding access rights
+    for (int i = 0; i< REG_COUNT/8; i++)
+    {
+        if (i!=0)
+        {
+            modbusSlaveToUpdate->modbusRegister->access_holding[i] = 0xFF;
+        }
+        if (i==0)
+        {
+            modbusSlaveToUpdate->modbusRegister->access_holding[i] = 0xF0;
+        }
+    }
 }
 
 void update_GPIOdir_registers(struct modbus* modbusSlaveToUpdate, struct gpioConf* gpioToEvaluate)
@@ -166,7 +180,7 @@ uint16_t number_gpio(void)
     return IO_count;
 }
 
-uint8_t modbusMyWriteRegistersCallBack(struct modbus* slave, uint16_t index)
+uint8_t modbusMyWriteCoilRegistersCallBack(struct modbus* slave, uint16_t index)
 {
     uint8_t error = 0;
     uint8_t coil = index>>3;
@@ -176,7 +190,26 @@ uint8_t modbusMyWriteRegistersCallBack(struct modbus* slave, uint16_t index)
     // Changing output state
     gpioConf_change_output_state(myGPIO+index,(slave->modbusRegister->coils[coil]) & mask);
     // Check for output really changed
-    error = (gpioConf_get_state(myGPIO+index) != ((slave->modbusRegister->coils[coil]) & mask)) ? 1:0;
+    error = (gpioConf_get_state(myGPIO+index) != ((slave->modbusRegister->coils[coil]) & mask)) ? 4:0;
 
+    return error;
+}
+
+uint8_t modbusMyWriteHoldingRegistersCallBack(struct modbus* slave, uint16_t index)
+{
+    uint8_t error = 0;
+    uint16_t valueToWrite = slave->modbusRegister->holdingRegisters[index];
+    struct gpioConf* myGPIO = slave->context;
+
+    if (index >= 0 && index < SIZE_GPIO && (valueToWrite == GPIO_IN || valueToWrite == GPIO_OUT))
+    {
+        // Changing dir of gpio
+        gpioConf_change_dir(myGPIO+index-4, valueToWrite); // The four first holding registers are preconfigured so the first GPIO is in index-4
+        error = 0;
+    }
+    else
+    {
+        error = 2;
+    }
     return error;
 }
